@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本語のページ</title>
+    <title>乗換案内</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>こんにちは、世界！</h1>
-    <p>これは日本語で書かれたページです。</p>
+    <h1>八王子駅の乗換案内</h1>
+
+    <!-- ここに動的に結果を表示 -->
+    <div id="results"></div>
+
+    <!-- JavaScriptの読み込み -->
+    <script src="app.js"></script>
 </body>
+<div>
+    <label for="time-input">変更する時刻:</label>
+    <input type="time" id="time-input">
+</div>
+
+
 </html>
