@@ -1,24 +1,15 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>乗換案内</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>八王子駅乗り換え時刻</title>
 </head>
 <body>
-    <h1>八王子駅の乗換案内</h1>
+    <h1>八王子駅乗り換え時刻</h1>
+    <label for="arrivalTime">現在時刻:</label>
+    <input type="time" id="arrivalTime">
+    <button id="calculateButton">計算</button>
+    <p id="result"></p>
 
-    <!-- ここに動的に結果を表示 -->
-    <div id="results"></div>
-
-    <!-- JavaScriptの読み込み -->
     <script src="app.js"></script>
 </body>
-<div>
-    <label for="time-input">変更する時刻:</label>
-    <input type="time" id="time-input">
-</div>
-
-
 </html>
