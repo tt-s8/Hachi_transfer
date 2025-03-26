@@ -1,70 +1,133 @@
 // CSV ファイルのパス
-const jc22Url = 'timetable/JC22-time.csv';
-const hck01Url = 'timetable/HCK01-time.csv';
+const hckUrl = 'timetable/HCK.csv';
+const jcUrl = 'timetable/JC.csv';
 
-// CSV ファイルを読み込む関数
-async function loadCsv(url) {
-    const response = await fetch(url);
-    const text = await response.text();
-    return text.split(',').map(time => parseInt(time));
-}
-
-// 時刻を HH:MM 形式にフォーマットする関数
-function formatTime(time) {
-    const hours = Math.floor(time / 100).toString().padStart(2, '0');
-    const minutes = (time % 100).toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-// 乗り換え時刻を計算する関数
-async function calculateTransferTime() {
-    try {
-        const jc22Times = await loadCsv(jc22Url);
-        const hck01Times = await loadCsv(hck01Url);
-
-        let arrivalTimeInt = parseInt(document.getElementById('arrivalTime').value.replace(':', ''));
-
-        if (!arrivalTimeInt) {
-            const now = new Date();
-            arrivalTimeInt = now.getHours() * 100 + now.getMinutes();
-            document.getElementById('arrivalTime').value = formatTime(arrivalTimeInt);
+//getCsv関数
+function getCsv(url){
+    //CSVファイルを文字列で取得。
+    var txt = new XMLHttpRequest();
+    txt.open('get', url, false);
+    txt.send();
+  
+    //改行ごとに配列化
+    var arr = txt.responseText.split('\n');
+  
+    //1次元配列を2次元配列に変換
+    var res = [];
+    for(var i = 0; i < arr.length; i++){
+      //空白行が出てきた時点で終了
+      if(arr[i] == '') break;
+      
+      //","ごとに配列化
+      res[i] = arr[i].split(',');
+  
+      for(var i2 = 0; i2 < res[i].length; i2++){
+        //数字の場合は「"」を削除
+        if(res[i][i2].match(/\-?\d+(.\d+)?(e[\+\-]d+)?/)){
+          res[i][i2] = parseFloat(res[i][i2].replace('"', ''));
         }
-
-        let bestArrivalTime = null;
-        let bestHck01Time = null;
-        let minTransferTime = Infinity;
-
-        for (const jc22Time of jc22Times) {
-            if (jc22Time >= arrivalTimeInt) {
-                const hck01Time = hck01Times.find(time => time >= jc22Time);
-                if (hck01Time) {
-                    const transferTime = hck01Time - jc22Time;
-                    if (transferTime < minTransferTime) {
-                        minTransferTime = transferTime;
-                        bestArrivalTime = jc22Time;
-                        bestHck01Time = hck01Time;
-                    }
-                }
-            }
-        }
-
-        if (bestArrivalTime && bestHck01Time) {
-          const transferTime = bestHck01Time - bestArrivalTime;
-          const transferMinutes = transferTime % 100; // 乗り換え時間を分で計算
-
-          document.getElementById('result').textContent =
-              `中央線 八王子駅発: ${formatTime(bestArrivalTime)} -> 八高線発 ${formatTime(bestHck01Time)} (乗り換え時間: ${transferMinutes}分)`;
-      } else {
-          document.getElementById('result').textContent = '乗り換え不可';
       }
-  } catch (error) {
-        document.getElementById('result').textContent = 'エラー';
-        console.error(error);
     }
+  
+    return res;
+  }
+  
+  //hck,JCの配列化
+const hck = getCsv(hckUrl);
+const jc = getCsv(jcUrl);
+
+//現在時刻の取得
+function getCurrentTimeAsNumber() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    return parseInt(hours*100 + minutes);
+  }
+  let timeNumber = getCurrentTimeAsNumber();
+  console.log (timeNumber)
+
+//現在時刻から最速の八高線のn本後の八高線を算出(デフォルト0本目)
+function hckTime(timeNumber,hck,trainNumber = 0) {
+    let closestValue = null;
+    let minDifference = Infinity;
+    let hckIndex = null;
+  
+    for (let i = 0; i < hck.length; i++) {
+      if (timeNumber <= hck[i]) {
+        const difference = hck[i] - timeNumber;
+        if (difference < minDifference) {
+          minDifference = difference;
+          closestValue = hck[i];
+          hckIndex = i;
+        }
+      }
+
+    }
+    if (trainNumber !== 0){
+        for (let i = 0; trainNumber - i !== 0; i++){
+          hckIndex = hckIndex + 1;
+          //console.log (hck[hckIndex]);
+            for (let i = 1; hck[hckIndex] < closestValue; i++){
+              //console.log (hck[hckIndex]);
+              hckIndex = hckIndex + i;
+              //console.log (i);
+            }
+            closestValue = hck[hckIndex];
+  }
 }
+    return closestValue;
+}
+hckTimeValue = hckTime(timeNumber, hck[3],0);
 
-// ページ読み込み時に現在時刻で計算
-calculateTransferTime();
 
-// 時刻が変更されたときに再計算
-document.getElementById('arrivalTime').addEventListener('change', calculateTransferTime);
+
+// HTML の要素を取得し、hckTimeValue を表示
+const timeElement = document.getElementById('time');
+timeElement.textContent = hckTimeValue;
+console.log(hckTimeValue);
+
+
+//確認
+  //let foo = jc[8][4]+10
+  //console.log (hck[3][2]);//hck(八高線)では、[3]に八王子駅の発車時刻
+  //console.log (jc[8][4]);//JC(中央線)では、[8]に八王子駅の発車時刻、[7]に西八王子駅の発車時刻がくる
+  //console.log (foo)
+
+// ボタン要素を取得
+const getTimeButton = document.getElementById('calculateButton');
+
+// 結果を表示する要素を取得
+const resultDiv = document.getElementById('result');
+
+// ボタンがクリックされたときの処理
+getTimeButton.addEventListener('click', function() {
+  // 時刻入力要素の値を取得
+  const nowTime = document.getElementById('nowTime').value;
+
+  // 結果を表示
+  //resultDiv.textContent = '選択された時刻: ' + nowTime;
+
+  // nowTimeをJavaScriptで利用する
+  console.log(nowTime); // コンソールに時刻を出力
+  // ここでarrivalTimeを使って他の処理を行う
+
+  // 時刻を数値に変換
+  timeNumber = parseInt(nowTime.replace(':', ''));
+
+  // timeNumberをJavaScriptで利用する
+  //console.log(timeNumber); // コンソールに数値を出力
+  // ここでtimeNumberを使って他の処理を行う
+
+ // hckTimeValue = hckTime(nowTime, hck[3],trainNumber);
+  // HTML の要素を取得し、hckTimeValue を表示
+// trainNumberSelect 要素を取得
+const trainNumberSelect = document.getElementById('trainNumberSelect');
+// 選択された値を trainNumber 変数に格納
+const trainNumber = parseInt(trainNumberSelect.value);
+hckTimeValue = hckTime(timeNumber, hck[3],trainNumber);
+console.log (trainNumber)
+// HTML の要素を取得し、hckTimeValue を表示
+const timeElement = document.getElementById('time');
+timeElement.textContent = hckTimeValue;
+console.log(hckTimeValue);
+});

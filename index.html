@@ -5,9 +5,25 @@
 </head>
 <body>
     <h1>八王子駅乗り換え時刻</h1>
-    <label for="arrivalTime">現在時刻:</label>
-    <input type="time" id="arrivalTime">
+    <label for="nowTime">現在時刻:</label>
+    <input type="time" id="nowTime">
+    <select id="trainNumberSelect">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+    </select>
+    <span>本後の八高線にする</span>
     <button id="calculateButton">計算</button>
+    <p>次の八高線の時刻:</p>
+    <p id="time"></p>
     <p id="result"></p>
 
     <script src="app.js"></script>
