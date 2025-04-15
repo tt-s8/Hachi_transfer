@@ -36,17 +36,20 @@ function getCsv(url){
 const hck = getCsv(hckUrl);
 const jc = getCsv(jcUrl);
 
-//現在時刻の取得
-function getCurrentTimeAsNumber() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    return parseInt(hours*100 + minutes);
-  }
-  let timeNumber = getCurrentTimeAsNumber();
-  console.log (timeNumber)
+  // 現在時刻を取得
+const now = new Date();
+const hours = now.getHours().toString().padStart(2, '0');
+const minutes = now.getMinutes().toString().padStart(2, '0');
+const currentTime = `${hours}:${minutes}`;
+let timeNumber = parseInt(hours + minutes);
+console.log (timeNumber)
 
-//現在時刻から最速の八高線のn本後の八高線を算出(デフォルト0本目)
+// input 要素を取得し、現在時刻を設定
+const timeInput = document.getElementById('nowTime');
+timeInput.value = currentTime;
+
+console.log(hck[1][3])
+//現在時刻から最速の八高線のn本後の八高線を算出する関数(デフォルト0本目)
 function hckTime(timeNumber,hck,trainNumber = 0) {
     let closestValue = null;
     let minDifference = Infinity;
@@ -61,7 +64,6 @@ function hckTime(timeNumber,hck,trainNumber = 0) {
           hckIndex = i;
         }
       }
-
     }
     if (trainNumber !== 0){
         for (let i = 0; trainNumber - i !== 0; i++){
@@ -75,16 +77,49 @@ function hckTime(timeNumber,hck,trainNumber = 0) {
             closestValue = hck[hckIndex];
   }
 }
-    return closestValue;
+  return { time: closestValue, index: hckIndex };
+//上記をコメントアウトする場合は、これを有効
+//    return closestValue;
 }
-hckTimeValue = hckTime(timeNumber, hck[3],0);
 
+console.log(jc[8])
+//八駅到着の中央線到着時刻関数
+function jcArrive(closestValue,jc){
+  for (let i = jc.length - 2; 0 < i ; i--) {
+    console.log(closestValue)
+    if (0 < jc[i] && jc[i] < closestValue){
+      ArriveTime = jc[i]
+      jcIndex = i
+      return { time: ArriveTime, index: jcIndex };
+    }
+  }
+}
 
+//時間4桁をxx:xxに変換の関数
+function timeConvert(closestValue){
+  const hours = Math.floor(closestValue / 100).toString().padStart(2, '0');
+  const minutes = (closestValue % 100).toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+let hckTimeValue = hckTime(timeNumber, hck[3],0).time;
+let hckTimeValue1 = hckTime(timeNumber, hck[3],1).time;
+let hckTimeValue2 = hckTime(timeNumber, hck[3],2).time;
+console.log(hckTimeValue)
+if (hckTimeValue == null) {
+  alert("八高線は本日の運行を終了しました");
+}
+
+//中央線の時刻表示
+let jcTimeValue = jcArrive(hckTimeValue,jc[8]).time;
+console.log(jcTimeValue)
+const jctimeElement = document.getElementById('jctime');
+jctimeElement.textContent = `${timeConvert(jc[7][jcArrive(hckTimeValue,jc[7]).index])}→${timeConvert(jcTimeValue)}`;//八王子駅のインデックス位置を基に西八の時刻を表示
 
 // HTML の要素を取得し、hckTimeValue を表示
 const timeElement = document.getElementById('time');
-timeElement.textContent = hckTimeValue;
-console.log(hckTimeValue);
+timeElement.textContent = `${timeConvert(hckTimeValue)}\n${timeConvert(hckTimeValue1)}\n${timeConvert(hckTimeValue2)}`;
+
 
 
 //確認
@@ -97,7 +132,7 @@ console.log(hckTimeValue);
 const getTimeButton = document.getElementById('calculateButton');
 
 // 結果を表示する要素を取得
-const resultDiv = document.getElementById('result');
+//const resultDiv = document.getElementById('result');
 
 // ボタンがクリックされたときの処理
 getTimeButton.addEventListener('click', function() {
@@ -124,10 +159,19 @@ getTimeButton.addEventListener('click', function() {
 const trainNumberSelect = document.getElementById('trainNumberSelect');
 // 選択された値を trainNumber 変数に格納
 const trainNumber = parseInt(trainNumberSelect.value);
-hckTimeValue = hckTime(timeNumber, hck[3],trainNumber);
-console.log (trainNumber)
+console.log(timeNumber)
+hckTimeValue = hckTime(timeNumber, hck[3],trainNumber).time;//hckTimeValue = hckTime(timeNumber, hck[3],0).time;
+hckTimeValue1 = hckTime(timeNumber, hck[3],trainNumber + 1).time;
+hckTimeValue2 = hckTime(timeNumber, hck[3],trainNumber + 2).time;
+if (hckTimeValue == null ) {
+  hckTimeValue = ("八高線の終電後です");
+}
+jcTimeValue = jcArrive(hckTimeValue,jc[8]).time;
+console.log(jcTimeValue)
 // HTML の要素を取得し、hckTimeValue を表示
 const timeElement = document.getElementById('time');
-timeElement.textContent = hckTimeValue;
-console.log(hckTimeValue);
+timeElement.textContent = `${timeConvert(hckTimeValue)}\n${timeConvert(hckTimeValue1)}\n${timeConvert(hckTimeValue2)}`;
+const jctimeElement = document.getElementById('jctime');
+jctimeElement.textContent = `${timeConvert(jc[7][jcArrive(hckTimeValue,jc[7]).index])}→${timeConvert(jcTimeValue)}`;
 });
+
