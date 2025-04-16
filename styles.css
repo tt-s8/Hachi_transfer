@@ -1,7 +1,102 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f8;
+    color: #333;
+    margin: 0;
+    padding: 20px;
     text-align: center;
 }
+
 h1 {
-    color: black;
+    background-color: #003366;
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+label,
+select,
+input,
+button,
+span {
+    font-size: 1.2rem;
+    margin: 10px;
+}
+
+input,
+select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: auto;
+    max-width: 160px;
+}
+
+
+button {
+    padding: 10px 20px;
+    background-color: #0078D4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #005a9e;
+}
+
+p {
+    font-size: 1.1rem;
+    margin: 15px 0 5px;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    label,
+    select,
+    input,
+    button,
+    span,
+    p {
+        font-size: 1rem;
+    }
+
+    input,
+    select {
+        width: 100%;
+    }
+}
+
+input[type="time"] {
+    width: 100px;
+}
+
+select#trainNumberSelect {
+    width: 70px;
+}
+/*大文字、左揃え*/
+#jctime {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+#time {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+#time {
+    display: flex;
+    justify-content: center; /* 横方向に中央揃え */
+    text-align: right;         /* 内部のテキストは右揃え */
+    width: 100%;              /* 要素が画面の幅いっぱいに広がる */
+    padding-right: 20px;       /* 右側に少し余白 */
+    box-sizing: border-box;   /* パディングが要素の幅に含まれるようにする */
 }

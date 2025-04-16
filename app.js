@@ -50,17 +50,17 @@ timeInput.value = currentTime;
 
 console.log(hck[1][3])
 //現在時刻から最速の八高線のn本後の八高線を算出する関数(デフォルト0本目)
-function hckTime(timeNumber,hck,trainNumber = 0) {
+function hckTime(timeNumber,trainNumber = 0) {
     let closestValue = null;
     let minDifference = Infinity;
     let hckIndex = null;
   
-    for (let i = 0; i < hck.length; i++) {
-      if (timeNumber <= hck[i]) {
-        const difference = hck[i] - timeNumber;
+    for (let i = 0; i < hck[3].length; i++) {
+      if (timeNumber <= hck[3][i]) {
+        const difference = hck[3][i] - timeNumber;
         if (difference < minDifference) {
           minDifference = difference;
-          closestValue = hck[i];
+          closestValue = hck[3][i];
           hckIndex = i;
         }
       }
@@ -69,27 +69,51 @@ function hckTime(timeNumber,hck,trainNumber = 0) {
         for (let i = 0; trainNumber - i !== 0; i++){
           hckIndex = hckIndex + 1;
           //console.log (hck[hckIndex]);
-            for (let i = 1; hck[hckIndex] < closestValue; i++){
+            for (let i = 1; hck[3][hckIndex] < closestValue; i++){
               //console.log (hck[hckIndex]);
               hckIndex = hckIndex + i;
               //console.log (i);
             }
-            closestValue = hck[hckIndex];
+            closestValue = hck[3][hckIndex];
+   }
   }
+  //中央線を求める
+    for (let i = jc[8].length - 2; 0 < i ; i--) {
+      ArriveTime = jc[8][i]
+      depTime = jc[7][i]
+      const timeDifference = ArriveTime - depTime;
+      if (5 < timeDifference && timeDifference < 30) {
+        ArriveTime = depTime + 4;
+      }
+      if (0 < ArriveTime && ArriveTime < closestValue && 0 < depTime){
+            jcIndex = i
+            console.log(i)
+            console.log((depTime))
+            break;
+        }
+    }
+    //const timeDifference = depTime - ArriveTime;//もし八王子駅で長時間停車する場合は、駅間を4分とし、それを到着時刻とする
+        //if (timeDifference > 5) {
+            //ArriveTime = depTime + 4;
+        //}
+
+    if (depTime < timeNumber) {
+        // depTime が timeNumber より小さい場合は、trainNumber を増やしてもう一度関数を呼び出す
+        return hckTime(timeNumber, trainNumber + 1);
+    } else {
+        return { hcktime: closestValue, hckindex: hckIndex, jc8Time: ArriveTime, jc7Time: depTime, jcIndex: jcIndex };
+    }
 }
-  return { time: closestValue, index: hckIndex };
-//上記をコメントアウトする場合は、これを有効
-//    return closestValue;
-}
+
 
 console.log(jc[8])
 //八駅到着の中央線到着時刻関数
-function jcArrive(closestValue,jc){
-  for (let i = jc.length - 2; 0 < i ; i--) {
-    console.log(closestValue)
-    if (0 < jc[i] && jc[i] < closestValue){
-      ArriveTime = jc[i]
+function jcArrive(closestValue,jc8,jc7){
+  for (let i = jc8.length - 2; 0 < i ; i--) {
+    if (0 < jc8[i] && jc8[i] < closestValue && 0 < jc7[i]){
+      ArriveTime = jc8[i]
       jcIndex = i
+      console.log(i)
       return { time: ArriveTime, index: jcIndex };
     }
   }
@@ -102,23 +126,28 @@ function timeConvert(closestValue){
   return `${hours}:${minutes}`;
 }
 
-let hckTimeValue = hckTime(timeNumber, hck[3],0).time;
-let hckTimeValue1 = hckTime(timeNumber, hck[3],1).time;
-let hckTimeValue2 = hckTime(timeNumber, hck[3],2).time;
+let hckTimeValue = hckTime(timeNumber,0).hcktime;
+let hckTimeValue1 = hckTime(timeNumber,1).hcktime;
+let hckTimeValue2 = hckTime(timeNumber,2).hcktime;
 console.log(hckTimeValue)
 if (hckTimeValue == null) {
   alert("八高線は本日の運行を終了しました");
 }
 
 //中央線の時刻表示
-let jcTimeValue = jcArrive(hckTimeValue,jc[8]).time;
-console.log(jcTimeValue)
-const jctimeElement = document.getElementById('jctime');
-jctimeElement.textContent = `${timeConvert(jc[7][jcArrive(hckTimeValue,jc[7]).index])}→${timeConvert(jcTimeValue)}`;//八王子駅のインデックス位置を基に西八の時刻を表示
+let jc8TimeValue = hckTime(timeNumber,0).jc8Time;
+let jc7TimeValue = hckTime(timeNumber,0).jc7Time;
+console.log(jc7TimeValue)
 
-// HTML の要素を取得し、hckTimeValue を表示
-const timeElement = document.getElementById('time');
-timeElement.textContent = `${timeConvert(hckTimeValue)}\n${timeConvert(hckTimeValue1)}\n${timeConvert(hckTimeValue2)}`;
+//HTMLに反映
+function timeHtml(){
+  const jctimeElement = document.getElementById('jctime');
+  jctimeElement.textContent = `${timeConvert(jc7TimeValue)}→${timeConvert(jc8TimeValue)}`;//八王子駅のインデックス位置を基に西八の時刻を表示
+  const timeElement = document.getElementById('time');
+  timeElement.innerHTML = `先発: ${timeConvert(hckTimeValue)}<br>次発:${timeConvert(hckTimeValue1)}<br>次々発:${timeConvert(hckTimeValue2)}`;
+}
+
+timeHtml();
 
 
 
@@ -159,19 +188,16 @@ getTimeButton.addEventListener('click', function() {
 const trainNumberSelect = document.getElementById('trainNumberSelect');
 // 選択された値を trainNumber 変数に格納
 const trainNumber = parseInt(trainNumberSelect.value);
-console.log(timeNumber)
-hckTimeValue = hckTime(timeNumber, hck[3],trainNumber).time;//hckTimeValue = hckTime(timeNumber, hck[3],0).time;
-hckTimeValue1 = hckTime(timeNumber, hck[3],trainNumber + 1).time;
-hckTimeValue2 = hckTime(timeNumber, hck[3],trainNumber + 2).time;
+hckTimeValue = hckTime(timeNumber,trainNumber).hcktime;
+hckTimeValue1 = hckTime(timeNumber,trainNumber + 1).hcktime;
+hckTimeValue2 = hckTime(timeNumber,trainNumber + 2).hcktime;
 if (hckTimeValue == null ) {
   hckTimeValue = ("八高線の終電後です");
 }
-jcTimeValue = jcArrive(hckTimeValue,jc[8]).time;
-console.log(jcTimeValue)
-// HTML の要素を取得し、hckTimeValue を表示
-const timeElement = document.getElementById('time');
-timeElement.textContent = `${timeConvert(hckTimeValue)}\n${timeConvert(hckTimeValue1)}\n${timeConvert(hckTimeValue2)}`;
-const jctimeElement = document.getElementById('jctime');
-jctimeElement.textContent = `${timeConvert(jc[7][jcArrive(hckTimeValue,jc[7]).index])}→${timeConvert(jcTimeValue)}`;
+jc8TimeValue = hckTime(timeNumber,trainNumber).jc8Time;
+jc7TimeValue = hckTime(timeNumber,trainNumber).jc7Time;
+console.log(jc7TimeValue)
+// HTMLに表示
+timeHtml();
 });
 
